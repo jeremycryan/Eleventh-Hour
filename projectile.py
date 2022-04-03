@@ -80,6 +80,7 @@ class Kunai:
             self.velocity *= 0.1 + 0.2 * random.random()
             self.gravity = True
             self.hit_effect()
+            self.game.kunai_hit.play()
 
         if self.position.y < -c.WINDOW_HEIGHT:
             self.velocity.y = 0
@@ -91,6 +92,7 @@ class Kunai:
             self.position.y = c.WINDOW_HEIGHT * 0.8
             self.velocity = Pose((0, 0))
             self.pickup = True
+            self.game.kunai_hit.play()
 
     def hit_effect(self, velocity=None):
         for i in range(30):
@@ -103,6 +105,7 @@ class Kunai:
         self.hit_effect((self.position - enemy.position).get_position())
         self.velocity = Pose((0, 0))
         self.stuck = True
+        self.game.kunai_hit.play()
 
     def draw(self, surface, offset=(0, 0)):
         angle = math.atan2(-self.direction.y, self.direction.x)

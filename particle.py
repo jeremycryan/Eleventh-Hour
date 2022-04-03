@@ -35,7 +35,8 @@ class Particle:
 
 class KunaiHitParticle(Particle):
 
-    def __init__(self, position, velocity=None, duration=0.3):
+    def __init__(self, position, velocity=None, duration=0.3, color=(255, 255, 255)):
+        self.color = color
         velocity_mag = random.random()**2 * 700 + 300
         if not velocity:
             velocity_angle = random.random() * 2 * math.pi
@@ -69,7 +70,7 @@ class KunaiHitParticle(Particle):
             corner[0] += self.position.x
             corner[1] += self.position.y
 
-        pygame.draw.polygon(surf, (255, 255, 255), corners)
+        pygame.draw.polygon(surf, self.color, corners)
 
 
         pass
@@ -120,10 +121,11 @@ class RewindParticle(Particle):
 
 class SunExplosion(Particle):
 
-    def __init__(self, game, duration = 0.7):
+    def __init__(self, game, duration = 0.7, color = (255, 255, 255)):
         super().__init__(duration=duration)
+        self.color = color
         self.light = pygame.Surface((c.GAME_WIDTH, c.GAME_HEIGHT))
-        self.light.fill((255, 255, 255))
+        self.light.fill(color)
         self.game = game
         self.game.shake(amt=30)
 
@@ -138,9 +140,39 @@ class SunExplosion(Particle):
             max_rad = math.sqrt(c.WINDOW_WIDTH**2 + c.WINDOW_HEIGHT**2) * 0.75
             min_rad = 110
             rad = min_rad + (max_rad - min_rad) * math.sqrt(self.through())*2
-            pygame.draw.circle(surface, (255, 255, 255), (c.WINDOW_WIDTH//2, c.WINDOW_HEIGHT//2 - 150), rad)
+            pygame.draw.circle(surface, self.color, (c.WINDOW_WIDTH//2, c.WINDOW_HEIGHT//2 - 150), rad)
         else:
             self.light.set_alpha(255 - (255 * 2 * (self.through() - 0.5)))
+            surface.blit(self.light, (0, 0))
+
+class SunExplosionLong(Particle):
+
+    def __init__(self, game, duration = 10, color = (255, 255, 255), callback=None):
+        super().__init__(duration=duration)
+        self.color = color
+        self.light = pygame.Surface((c.GAME_WIDTH, c.GAME_HEIGHT))
+        self.light.fill(color)
+        self.dark = pygame.Surface(self.light.get_size())
+        self.dark.fill((0, 0, 0))
+        self.game = game
+        self.game.shake(amt=30)
+        self.callback = callback
+
+    def update(self, dt, events):
+        super().update(dt, events)
+
+    def destroy(self):
+        self.callback()
+
+    def draw(self, surface, offset=(0, 0)):
+        if self.through() < 0.1:
+            max_rad = math.sqrt(c.WINDOW_WIDTH**2 + c.WINDOW_HEIGHT**2) * 0.75
+            min_rad = 110
+            rad = min_rad + (max_rad - min_rad) * math.sqrt(self.through())*10
+            pygame.draw.circle(surface, self.color, (c.WINDOW_WIDTH//2, c.WINDOW_HEIGHT//2 - 150), rad)
+        else:
+            self.light.set_alpha(255 - (255 * 1.1111 * (self.through() - 0.1)))
+            surface.blit(self.dark, (0, 0))
             surface.blit(self.light, (0, 0))
 
 class SunTint(Particle):
@@ -224,7 +256,7 @@ class Laser(Particle):
     def __init__(self, position, direction):
         super().__init__(position, duration=0.5)
         self.direction = Pose(direction)
-        self.height = 50
+        self.height = 100
 
     def draw(self, surface, offset=(0, 0)):
         vh = self.height * (1 - self.through())**3
@@ -265,7 +297,7 @@ class LaserGuide(Particle):
 
 
 class LaserBoomParticle(Particle):
-    def __init__(self, position, velocity=None, duration=1.5):
+    def __init__(self, position, direction=(1, 0), velocity=None, duration=1.5):
         velocity_mag = random.random()**2 * 800
         if not velocity:
             velocity_angle = random.random() * 2 * math.pi
@@ -277,6 +309,8 @@ class LaserBoomParticle(Particle):
         super().__init__(position=position, velocity=velocity, duration=duration)
         self.age += random.random() * 0.25
         self.velocity.x = abs(self.velocity.x) * (1 + random.random()*500/(abs(self.velocity.y) + 1))
+        if direction[0] < 1:
+            self.velocity.x *= -1
 
     def update(self, dt, events):
         super().update(dt, events)
@@ -294,3 +328,22 @@ class LaserBoomParticle(Particle):
 
 
         pass
+
+
+class WarningParticle(Particle):
+
+    surf = None
+    def __init__(self, position=(0, 0)):
+        super().__init__(position, duration = 1.5)
+        if not self.surf:
+            WarningParticle.surf = pygame.image.load("images/warning.png")
+            WarningParticle.surf.set_colorkey((0, 0, 0))
+
+    def update(self, dt, events):
+        super().update(dt, events)
+
+    def draw(self, surf, offset=(0, 0)):
+        x = self.position.x + offset[0] - self.surf.get_width()//2
+        y = self.position.y + offset[1] - self.surf.get_height()//2
+        if self.through() %0.2 < 0.1:
+            surf.blit(self.surf, (x, y), special_flags=pygame.BLEND_ADD)

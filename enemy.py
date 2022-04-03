@@ -1,3 +1,4 @@
+from battery import Battery
 from primitives import GameObject, Pose
 from sprite import Sprite, SpriteSheet
 from particle import BoomParticle, BigBoom, Laser, LaserBoomParticle, LaserGuide
@@ -7,6 +8,7 @@ import constants as c
 class Enemy(GameObject):
 
     starting_hp = 1
+    reward = 25
 
     def __init__(self, game, position=(0, 0)):
         self.game = game
@@ -17,6 +19,7 @@ class Enemy(GameObject):
         self.since_destroy = 0
         self.velocity = Pose((0, 0))
         self.recoil_position = Pose((0, 0))
+        self.silent = False
 
     def update(self, dt, events):
         self.recoil_position += self.velocity * dt
@@ -49,6 +52,8 @@ class Enemy(GameObject):
             self.clean_up()
 
     def clean_up(self):
+        if not self.silent:
+            self.game.explosion_sound.play()
         self.game.enemies.remove(self)
         for projectile, rel_pos in self.stuck_projectiles:
             projectile.velocity = rel_pos * 40
@@ -60,10 +65,13 @@ class Enemy(GameObject):
         self.game.particles.append(BigBoom(self.position.get_position()))
         self.game.shake(amt=20)
 
+        for i in range(int(self.reward / self.game.get_multiplier())):
+            self.game.pickups.append(Battery(self.game, 1, self.position.get_position()))
 
 
-    def destroy(self):
 
+    def destroy(self, silent=False):
+        self.silent = silent
         self.destroyed = True
         self.since_destroy = 0
 
@@ -100,15 +108,18 @@ class Orb(Enemy):
         self.since_laser = 0
         self.since_lockon = 0
         self.locked_on = False
-        self.cooldown = 3
+        self.cooldown = 2.5
         self.has_closed = False
 
 
     def get_target_position(self):
+        y = self.game.player.position.y
+        if y > c.GAME_HEIGHT * 0.7:
+            y = c.GAME_HEIGHT * 0.7
         if self.direction.x > 0:
-            return Pose((100, self.game.player.position.y))
+            return Pose((100, y))
         else:
-            return Pose((c.GAME_WIDTH - 100, self.game.player.position.y))
+            return Pose((c.GAME_WIDTH - 100, y))
 
     def update(self, dt, events):
         if self.game.rewinding:
@@ -142,6 +153,7 @@ class Orb(Enemy):
 
 
     def lock_on(self):
+        self.game.laser_aim.play()
         self.locked_on = True
         self.since_lockon = 0
         self.sprite.start_animation("opening")
@@ -153,13 +165,18 @@ class Orb(Enemy):
 
     def fire_laser(self):
         self.since_laser = 0
+        self.game.laser_sound.play()
         if self.direction.x > 0:
             self.velocity.x -= 1500
         else:
             self.velocity.x += 1500
         self.game.particles.append(Laser(self.position.get_position(), self.direction.get_position()))
         for i in range(50):
-            self.game.particles.append(LaserBoomParticle(self.position.get_position(), duration=1))
+            self.game.particles.append(LaserBoomParticle(self.position.get_position(), direction=self.direction.get_position(), duration=1))
+
+        player = self.game.player
+        if (player.position.x - self.position.x) * self.direction.x > 0 and abs(player.position.y - self.position.y) < 80:
+            player.get_hit_by_enemy(self)
 
 
     def close_up(self):
@@ -170,8 +187,8 @@ class Orb(Enemy):
         self.sprite.set_position((self.position + self.recoil_position + Pose(offset)).get_position())
         self.sprite.draw(surf)
 
-    def destroy(self):
-        super().destroy()
+    def destroy(self, silent=False):
+        super().destroy(silent)
         self.sprite.start_animation("idle")
 
     def collides_with_projectile(self, projectile):
@@ -183,12 +200,9 @@ class Orb(Enemy):
 
     def clean_up(self):
         super().clean_up()
-        if self.direction.x < 0:
-            self.game.spawn_orb(False)
-        else:
-            self.game.spawn_orb(True)
 
 class Scuttle(Enemy):
+    reward = 25
 
     def __init__(self, game, position, direction):
         super().__init__(game, position=position)
@@ -205,6 +219,8 @@ class Scuttle(Enemy):
         self.sprite.start_animation("idle")
 
     def update(self, dt, events):
+        if self.game.rewinding:
+            dt *= 0.1
         super().update(dt, events)
         if not self.destroyed:
             if self.direction.x < 0:
@@ -227,6 +243,6 @@ class Scuttle(Enemy):
         if diff.magnitude() < self.radius + 5:
             return True
 
-    def destroy(self):
-        super().destroy()
+    def destroy(self, silent=False):
+        super().destroy(silent)
         self.velocity = Pose((0, 0))

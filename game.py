@@ -604,8 +604,8 @@ class Game:
 
         while True:
             events, dt = self.get_events()
-            if dt > 1/40:
-                dt = 1/40
+            if dt > 1/20:
+                dt = 1/20
             self.update_background(dt, events)
             self.update_fps(dt, events)
 

@@ -14,10 +14,10 @@ class Game:
 
     def __init__(self):
         pygame.init()
-        self.fullscreen = False
+        self.fullscreen = True
         self.screen = pygame.display.set_mode((c.WINDOW_WIDTH, c.WINDOW_HEIGHT))
         pygame.display.set_icon(pygame.image.load("images/kunai_ui.png"))
-        self.colorblind_mode = False
+        self.colorblind_mode = True
         self.clock = pygame.time.Clock()
         pygame.display.set_caption("Eleventh Hour")
 
@@ -25,29 +25,113 @@ class Game:
         self.last_distance = None
 
         self.intro()
+        self.directions()
 
         while True:
+
             self.init()
             self.main()
 
-    def directions(self):
+    def victory_screen(self, prev_surf):
         shade = pygame.Surface((c.WINDOW_WIDTH, c.WINDOW_HEIGHT))
-        shade.fill((0, 0, 0))
-        back = pygame.image.load("images/instructions.png")
+        shade.fill((255, 255, 255))
+        alpha = 0
         age = 0
+        while alpha < 255:
+            events, dt = self.get_events()
+            age += dt
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(prev_surf, (0, 0))
+
+            alpha += 255 * dt
+            shade.set_alpha(alpha)
+            self.screen.blit(shade, (0, 0))
+
+            self.update_display()
+
+        back = pygame.image.load("images/win.png")
+        age = 0
+        alpha = 255
         should_Break = False
+        etc = pygame.image.load("images/etc_light.png")
         while not should_Break:
             events, dt = self.get_events()
             age += dt
             self.screen.blit(back, (0, 0))
+            if age > 3 and age%1 < 0.7:
+                self.screen.blit(etc, (c.WINDOW_WIDTH//2 - etc.get_width()//2, c.WINDOW_HEIGHT - etc.get_height()))
 
             for event in events:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         should_Break = True
 
+            shade.set_alpha(alpha)
+            self.screen.blit(shade, (0, 0))
+            alpha -= 255 * dt
 
             self.update_display()
+        alpha = 0
+        age = 0
+
+        shade.fill((0, 0, 0))
+
+        while alpha < 255:
+            events, dt = self.get_events()
+            age += dt
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(back, (0, 0))
+
+            alpha += 255 * dt
+            shade.set_alpha(alpha)
+            self.screen.blit(shade, (0, 0))
+
+            self.update_display()
+        pygame.quit()
+        sys.exit()
+
+    def directions(self):
+        shade = pygame.Surface((c.WINDOW_WIDTH, c.WINDOW_HEIGHT))
+        shade.fill((0, 0, 0))
+        back = pygame.image.load("images/instructions.png")
+        age = 0
+        alpha = 255
+        should_Break = False
+        etc = pygame.image.load("images/enter_to_continue.png")
+        while not should_Break:
+            events, dt = self.get_events()
+            age += dt
+            self.screen.blit(back, (0, 0))
+            if age > 3 and age%1 < 0.7:
+                self.screen.blit(etc, (c.WINDOW_WIDTH//2 - etc.get_width()//2, c.WINDOW_HEIGHT - etc.get_height()))
+
+            for event in events:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_RETURN:
+                        should_Break = True
+
+            shade.set_alpha(alpha)
+            self.screen.blit(shade, (0, 0))
+            alpha -= 255 * dt
+
+            self.update_display()
+        alpha = 0
+        age = 0
+
+        while alpha < 255:
+            events, dt = self.get_events()
+            age += dt
+            self.screen.fill((0, 0, 0))
+            self.screen.blit(back, (0, 0))
+
+
+
+            shade.set_alpha(alpha)
+            self.screen.blit(shade, (0, 0))
+            alpha += 500 * dt
+
+            self.update_display()
+
 
     def intro(self):
         section = pygame.Surface((c.WINDOW_WIDTH, c.WINDOW_HEIGHT//3 + 15))
@@ -609,13 +693,16 @@ class Game:
             if self.day <= 0:
                 self.lose()
 
-
-
             self.update_display()
             if self.really_lost:
                 break
 
+            if self.xpos >= 100000:
+                self.win()
 
+
+    def win(self):
+        self.victory_screen(self.screen.copy())
 
     def really_lose(self):
         self.really_lost = True

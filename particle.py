@@ -104,6 +104,10 @@ class RewindParticle(Particle):
     def draw(self, surf, offset=(0, 0)):
         if self.destroyed:
             return
+        margin = 10
+        if self.position.x < -margin or self.position.x > c.GAME_WIDTH + margin:
+            if self.position.y < - margin or self.position.y > c.GAME_HEIGHT + margin:
+                return
         surf_to_draw = self.surf.copy()
         darken_alpha = 200 + 55 * (1 - self.through()) #((1 - self.through()**2)) * 100 + 155
         dark = pygame.Surface(surf_to_draw.get_size())

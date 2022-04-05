@@ -265,6 +265,8 @@ class Game:
         self.speed = 500
         self.since_orb = 0
 
+        self.ccs_surf = None
+
         self.start_pos = 0
         self.alef_14 = pygame.font.Font("fonts/alef.ttf", 14)
 
@@ -585,8 +587,11 @@ class Game:
             miles = 100
         city_center_string = f"{miles} miles to city center"
         context_string = f"Last run:"
-        ccs_string = self.alef_14.render(city_center_string, 1, (255, 255, 255))
-        surf.blit(ccs_string, (c.WINDOW_WIDTH - ccs_string.get_width() - 5, c.WINDOW_HEIGHT - ccs_string.get_height() - 3))
+        ccs_string = self.alef_14.render(f"{miles}", 1, (255, 255, 255))
+        if not self.ccs_surf:
+            self.ccs_surf = self.alef_14.render(" miles to city center", 1, (255, 255, 255))
+        surf.blit(ccs_string, (c.WINDOW_WIDTH - ccs_string.get_width() - self.ccs_surf.get_width() - 5, c.WINDOW_HEIGHT - ccs_string.get_height() - 3))
+        surf.blit(self.ccs_surf, (c.WINDOW_WIDTH - self.ccs_surf.get_width() - 5, c.WINDOW_HEIGHT - self.ccs_surf.get_height() - 3))
 
         if self.last_distance and not self.game_started:
             cx_string = self.alef_14.render(context_string, 1, (255, 255, 255))
@@ -637,8 +642,6 @@ class Game:
                 if self.since_scuttle > 3.5 / self.get_multiplier():
                     self.since_scuttle = 0
                     self.spawn_scuttle(random.choice([0, 1]))
-
-                print(self.get_multiplier(), self.since_orb)
 
                 if self.get_multiplier() > 1.4:
                     if self.since_orb > 8 / self.get_multiplier():

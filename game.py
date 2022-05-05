@@ -10,12 +10,14 @@ from Button import Button
 
 import random
 
+
 class Game:
 
     def __init__(self):
         pygame.init()
         self.fullscreen = True
-        self.screen = pygame.display.set_mode((c.WINDOW_WIDTH, c.WINDOW_HEIGHT))
+        self.screen = pygame.display.set_mode(
+            (c.WINDOW_WIDTH, c.WINDOW_HEIGHT))
         pygame.display.set_icon(pygame.image.load("images/kunai_ui.png"))
         self.colorblind_mode = True
         self.clock = pygame.time.Clock()
@@ -58,8 +60,9 @@ class Game:
             events, dt = self.get_events()
             age += dt
             self.screen.blit(back, (0, 0))
-            if age > 3 and age%1 < 0.7:
-                self.screen.blit(etc, (c.WINDOW_WIDTH//2 - etc.get_width()//2, c.WINDOW_HEIGHT - etc.get_height()))
+            if age > 3 and age % 1 < 0.7:
+                self.screen.blit(
+                    etc, (c.WINDOW_WIDTH//2 - etc.get_width()//2, c.WINDOW_HEIGHT - etc.get_height()))
 
             for event in events:
                 if event.type == pygame.KEYDOWN:
@@ -102,8 +105,9 @@ class Game:
             events, dt = self.get_events()
             age += dt
             self.screen.blit(back, (0, 0))
-            if age > 3 and age%1 < 0.7:
-                self.screen.blit(etc, (c.WINDOW_WIDTH//2 - etc.get_width()//2, c.WINDOW_HEIGHT - etc.get_height()))
+            if age > 3 and age % 1 < 0.7:
+                self.screen.blit(
+                    etc, (c.WINDOW_WIDTH//2 - etc.get_width()//2, c.WINDOW_HEIGHT - etc.get_height()))
 
             for event in events:
                 if event.type == pygame.KEYDOWN:
@@ -124,14 +128,11 @@ class Game:
             self.screen.fill((0, 0, 0))
             self.screen.blit(back, (0, 0))
 
-
-
             shade.set_alpha(alpha)
             self.screen.blit(shade, (0, 0))
             alpha += 500 * dt
 
             self.update_display()
-
 
     def intro(self):
         section = pygame.Surface((c.WINDOW_WIDTH, c.WINDOW_HEIGHT//3 + 15))
@@ -139,14 +140,15 @@ class Game:
             section.copy() for _ in range(3)
         ]
         for section in sections:
-            section.fill((0,0,0))
+            section.fill((0, 0, 0))
         age = 0
         alphas = [
             255 + 500,
-            255 +2000,
-            255 +3500,
+            255 + 2000,
+            255 + 3500,
         ]
-        sections[1] = pygame.transform.scale(sections[1], (c.WINDOW_WIDTH, c.WINDOW_HEIGHT//4))
+        sections[1] = pygame.transform.scale(
+            sections[1], (c.WINDOW_WIDTH, c.WINDOW_HEIGHT//4))
         back = pygame.image.load("images/intro.png")
         while True:
             events, dt = self.get_events()
@@ -166,11 +168,9 @@ class Game:
                 if y > c.WINDOW_HEIGHT//2:
                     y -= 100
             self.update_display()
+            self.clock.tick(240)
             if age > 14:
                 break
-
-
-
 
     def toggle_colorblind_mode(self):
         self.colorblind_mode = not self.colorblind_mode
@@ -222,10 +222,11 @@ class Game:
             self.update_display()
 
         if self.fullscreen:
-            self.screen = pygame.display.set_mode((c.WINDOW_WIDTH, c.WINDOW_HEIGHT), flags=pygame.FULLSCREEN)
+            self.screen = pygame.display.set_mode(
+                (c.WINDOW_WIDTH, c.WINDOW_HEIGHT), flags=pygame.FULLSCREEN)
         else:
-            self.screen = pygame.display.set_mode((c.WINDOW_WIDTH, c.WINDOW_HEIGHT))
-
+            self.screen = pygame.display.set_mode(
+                (c.WINDOW_WIDTH, c.WINDOW_HEIGHT))
 
     def update_display(self):
         pygame.display.flip()
@@ -242,7 +243,8 @@ class Game:
     def spawn_scuttle(self, left=True):
         y = c.WINDOW_HEIGHT * 0.73
         if not left:
-            self.enemies.append(Scuttle(self, (c.WINDOW_WIDTH + 1000, y), (-1, 0)))
+            self.enemies.append(
+                Scuttle(self, (c.WINDOW_WIDTH + 1000, y), (-1, 0)))
             self.particles.append(WarningParticle((c.WINDOW_WIDTH - 50, y)))
         else:
             self.enemies.append(Scuttle(self, (-1000, y), (1, 0)))
@@ -250,9 +252,11 @@ class Game:
 
     def spawn_orb(self, left=True):
         if left:
-            self.enemies.append(Orb(self, (-50, -random.random() * 200 - 50), direction=(1, 0)))
+            self.enemies.append(
+                Orb(self, (-50, -random.random() * 200 - 50), direction=(1, 0)))
         else:
-            self.enemies.append(Orb(self, (c.WINDOW_WIDTH + 50, -random.random() * 200 - 50), direction=(-1, 0)))
+            self.enemies.append(
+                Orb(self, (c.WINDOW_WIDTH + 50, -random.random() * 200 - 50), direction=(-1, 0)))
 
     def game_start(self):
         self.game_started = True
@@ -269,6 +273,8 @@ class Game:
 
         self.start_pos = 0
         self.alef_14 = pygame.font.Font("fonts/alef.ttf", 14)
+        self.voyager_light, self.voyager_heavy = pygame.font.Font(
+            "fonts/voyager_light.otf", 30), pygame.font.Font("fonts/voyager_heavy.otf", 30)
 
         self.shade = pygame.Surface((c.GAME_WIDTH, c.GAME_HEIGHT))
         self.shade.fill((0, 0, 0))
@@ -287,6 +293,22 @@ class Game:
         self.title = pygame.image.load("images/title.png")
         self.title.set_colorkey((255, 0, 0))
         self.title_pos = int(c.WINDOW_HEIGHT * 0.3)
+
+        vl = self.voyager_light.render(
+            "Quit", False, (0, 0, 0))
+        tw, th = self.title.get_size()
+        qw, qh = vl.get_size()
+        self.tx = c.GAME_WIDTH//2 - tw//2
+        self.ty = int(c.GAME_HEIGHT * 0.3) - th//2
+
+        self.quit_button = Button(
+            surf=vl,
+            pos=(self.tx+tw//2, self.ty+th+c.WINDOW_HEIGHT//20),
+            hover_surf=self.voyager_heavy.render(
+                "Quit", False, "#a551e8"),
+            on_click=quit,
+            pulse=False,
+            grow_percent=10)
 
         self.nope_sound = pygame.mixer.Sound("sounds/nope.wav")
         self.nope_sound.set_volume(0.2)
@@ -309,8 +331,7 @@ class Game:
         self.jump_sound = pygame.mixer.Sound("sounds/jump.wav")
         self.jump_sound.set_volume(0.3)
 
-
-        self.press_e= pygame.image.load("images/press_e.png")
+        self.press_e = pygame.image.load("images/press_e.png")
 
         self.horizon = c.GAME_HEIGHT * 0.6
         self.floor = c.GAME_HEIGHT - 140
@@ -325,20 +346,26 @@ class Game:
         self.water_texture = pygame.image.load("images/water.png")
 
         self.background = pygame.image.load("images/bakground.png")
-        self.background_reflection = pygame.transform.flip(self.background, 0, 1)
-        self.background_buildings = pygame.image.load("images/background_buildings.png")
+        self.background_reflection = pygame.transform.flip(
+            self.background, 0, 1)
+        self.background_buildings = pygame.image.load(
+            "images/background_buildings.png")
         self.background_buildings.set_colorkey((255, 255, 255))
-        self.bb_reflection = pygame.transform.flip(self.background_buildings, 0, 1)
+        self.bb_reflection = pygame.transform.flip(
+            self.background_buildings, 0, 1)
         self.bb_reflection.set_colorkey((255, 255, 255))
-        self.water_shade = pygame.Surface((c.GAME_WIDTH, c.GAME_HEIGHT - self.horizon))
+        self.water_shade = pygame.Surface(
+            (c.GAME_WIDTH, c.GAME_HEIGHT - self.horizon))
         self.water_shade.fill((0, 0, 0))
-        self.foreground_buildings = pygame.image.load("images/foreground_buildings.png")
+        self.foreground_buildings = pygame.image.load(
+            "images/foreground_buildings.png")
         self.foreground_buildings.set_colorkey((255, 255, 255))
         self.sun = pygame.image.load("images/sun.png")
         self.train = pygame.image.load("images/train.png")
 
         self.blue = pygame.image.load("images/blue.png")
-        self.blue = pygame.transform.scale(self.blue, (c.GAME_WIDTH, c.GAME_HEIGHT))
+        self.blue = pygame.transform.scale(
+            self.blue, (c.GAME_WIDTH, c.GAME_HEIGHT))
         self.blue_color = self.blue.get_at((0, 0))
 
         self.clock = pygame.time.Clock()
@@ -362,16 +389,16 @@ class Game:
         self.quad_ui = pygame.image.load("images/charge_quadrant_one.png")
         self.quad_color_ui = pygame.image.load("images/charge_quad_color.png")
         self.center_ui = pygame.image.load("images/charge_center.png")
-        self.center_color_ui = pygame.image.load("images/charge_center_color.png")
+        self.center_color_ui = pygame.image.load(
+            "images/charge_center_color.png")
         self.charge_back_ui = pygame.image.load("images/charge_background.png")
         self.charge_glow = pygame.image.load("images/charge_glow.png")
 
         self.since_scuttle = 0
 
-
     def get_offset(self):
 
-        if self.shake_direction.magnitude() <1:
+        if self.shake_direction.magnitude() < 1:
             return (0, 0)
         return (self.shake_direction * (1/self.shake_direction.magnitude()) * self.shake_amp * math.cos(self.since_shake*20)).get_position()
 
@@ -421,7 +448,8 @@ class Game:
         text = f"{int(minfps)} |  {fps} |  {int(maxfps)}"
         surf = self.fps_font.render(text, 0, color)
         surface.blit(label, (c.GAME_WIDTH - label.get_width() - 10, 10))
-        surface.blit(surf, (c.GAME_WIDTH - surf.get_width() - 10, 10 + label.get_height()))
+        surface.blit(surf, (c.GAME_WIDTH - surf.get_width() -
+                     10, 10 + label.get_height()))
 
     def draw_background(self, surf, offset=(0, 0)):
         bgh = self.background.get_height()
@@ -429,10 +457,9 @@ class Game:
         bgy = -margin * self.day
         ba = pygame.Rect((0, -bgy, c.GAME_WIDTH, self.horizon))
         surf.blit(self.background, (0, 0), area=ba)
-        bra = pygame.Rect((0, margin * (1 - self.day) + (c.GAME_HEIGHT - self.horizon)/2, c.GAME_WIDTH, c.GAME_HEIGHT - self.horizon))
+        bra = pygame.Rect((0, margin * (1 - self.day) + (c.GAME_HEIGHT -
+                          self.horizon)/2, c.GAME_WIDTH, c.GAME_HEIGHT - self.horizon))
         surf.blit(self.background_reflection, (0, self.horizon), area=bra)
-
-
 
         sun_peak_height = self.sun.get_height() * 1.5
         sx = c.GAME_WIDTH//2 - self.sun.get_width()//2 + offset[0]
@@ -451,7 +478,8 @@ class Game:
 
         self.water_shade.set_alpha(60 + 20 * self.day)
         surf.blit(self.water_shade, (0, self.horizon + offset[1]))
-        surf.blit(self.water_texture, (0, self.horizon + offset[1]), special_flags= pygame.BLEND_ADD)
+        surf.blit(self.water_texture, (0, self.horizon +
+                  offset[1]), special_flags=pygame.BLEND_ADD)
 
         fbw = self.foreground_buildings.get_width()
         fbh = self.foreground_buildings.get_height()
@@ -466,16 +494,19 @@ class Game:
         train_center_x = c.GAME_WIDTH//2
         train_spacing = 5
         train_width = self.train.get_width()
-        train_start_x = train_center_x - self.train.get_width()//2 + offset[0] - train_spacing - train_width
+        train_start_x = train_center_x - self.train.get_width()//2 + \
+            offset[0] - train_spacing - train_width
 
         if self.colorblind_mode:
             surf.blit((self.lightener), (0, 0))
 
         for number in range(3):
             xo, yo = self.get_train_offset(number)
-            train_x = int(train_start_x + number * train_spacing + number * train_width + xo)
+            train_x = int(train_start_x + number *
+                          train_spacing + number * train_width + xo)
             train_y = int(self.floor - 5 + yo + offset[1])
-            surf.blit(self.train, (train_x, train_y), special_flags=pygame.BLEND_MULT)
+            surf.blit(self.train, (train_x, train_y),
+                      special_flags=pygame.BLEND_MULT)
 
     def get_train_number(self, x):
         train_center_x = c.GAME_WIDTH // 2
@@ -526,7 +557,8 @@ class Game:
     def lose(self):
         if self.lost:
             return
-        self.particles.append(SunExplosionLong(self, duration=6, color=(255, 0, 0), callback=self.really_lose))
+        self.particles.append(SunExplosionLong(
+            self, duration=6, color=(255, 0, 0), callback=self.really_lose))
         self.lost = True
         self.last_distance = self.xpos
 
@@ -543,7 +575,7 @@ class Game:
         charge_per_section = 25
         max_charge = charge_per_section * 5
         quads = self.player.charge//charge_per_section
-        remainder = self.player.charge%charge_per_section
+        remainder = self.player.charge % charge_per_section
 
         x = c.WINDOW_WIDTH//2 - self.charge_back_ui.get_width()//2
         y = c.WINDOW_HEIGHT - 105 - self.charge_back_ui.get_height()//22
@@ -559,8 +591,9 @@ class Game:
             dark.fill((0, 0, 0))
             dark.set_alpha(50 + 128 * math.sin(self.game_time*6))
             glow.blit(dark, (0, 0))
-            surf.blit(glow, (x - glow.get_width()//2 + quad.get_width()//2, y), special_flags=pygame.BLEND_ADD)
-            if not self.rewinding and self.game_time%1 < 0.7:
+            surf.blit(glow, (x - glow.get_width()//2 +
+                      quad.get_width()//2, y), special_flags=pygame.BLEND_ADD)
+            if not self.rewinding and self.game_time % 1 < 0.7:
                 pos = c.WINDOW_WIDTH//2 - self.press_e.get_width()//2, y - 28
                 surf.blit(self.press_e, pos)
         surf.blit(self.charge_back_ui, (x, y))
@@ -589,28 +622,26 @@ class Game:
         context_string = f"Last run:"
         ccs_string = self.alef_14.render(f"{miles}", 1, (255, 255, 255))
         if not self.ccs_surf:
-            self.ccs_surf = self.alef_14.render(" miles to city center", 1, (255, 255, 255))
-        surf.blit(ccs_string, (c.WINDOW_WIDTH - ccs_string.get_width() - self.ccs_surf.get_width() - 5, c.WINDOW_HEIGHT - ccs_string.get_height() - 3))
-        surf.blit(self.ccs_surf, (c.WINDOW_WIDTH - self.ccs_surf.get_width() - 5, c.WINDOW_HEIGHT - self.ccs_surf.get_height() - 3))
+            self.ccs_surf = self.alef_14.render(
+                " miles to city center", 1, (255, 255, 255))
+        surf.blit(ccs_string, (c.WINDOW_WIDTH - ccs_string.get_width() -
+                  self.ccs_surf.get_width() - 5, c.WINDOW_HEIGHT - ccs_string.get_height() - 3))
+        surf.blit(self.ccs_surf, (c.WINDOW_WIDTH - self.ccs_surf.get_width() -
+                  5, c.WINDOW_HEIGHT - self.ccs_surf.get_height() - 3))
 
         if self.last_distance and not self.game_started:
             cx_string = self.alef_14.render(context_string, 1, (255, 255, 255))
-            surf.blit(cx_string, (c.WINDOW_WIDTH - cx_string.get_width() - 5, c.WINDOW_HEIGHT - cx_string.get_height() - 19))
-
-
-
+            surf.blit(cx_string, (c.WINDOW_WIDTH - cx_string.get_width() -
+                      5, c.WINDOW_HEIGHT - cx_string.get_height() - 19))
 
     def get_multiplier(self):
         return ((self.xpos - self.start_pos)/14000 + 3)/3
 
     def main(self):
         self.lost = False
-        self.clock.tick(60)
-
         while True:
             events, dt = self.get_events()
-            if dt > 1/20:
-                dt = 1/20
+            self.clock.tick(400)
             self.update_background(dt, events)
             self.update_fps(dt, events)
 
@@ -628,7 +659,8 @@ class Game:
                 self.particles = keep_particles
                 if self.lost:
                     dt *= 0.01
-                    events = [event for event in events if event.type != pygame.KEYDOWN and event.type != pygame.MOUSEBUTTONDOWN]
+                    events = [event for event in events if event.type !=
+                              pygame.KEYDOWN and event.type != pygame.MOUSEBUTTONDOWN]
                 self.player.update(dt, events)
                 for pickup in self.pickups[:]:
                     pickup.update(dt, events)
@@ -662,8 +694,6 @@ class Game:
 
             offset = self.get_offset()
 
-
-
             self.draw_background(self.screen, offset)
             self.draw_hud(self.screen)
             for pickup in self.pickups:
@@ -675,13 +705,17 @@ class Game:
             self.player.draw(self.screen, offset)
             self.draw_fps(self.screen)
 
-            x = c.GAME_WIDTH//2 - self.title.get_width()//2
-            y = int(c.GAME_HEIGHT * 0.3) - self.title.get_height()//2
-            self.screen.blit(self.title, (x, y))
+            alpha = self.title_pos * 255 / c.GAME_HEIGHT / 0.3
 
-            if self.game_started:
+            if not self.game_started or alpha > 0:
+                self.quit_button.update(dt, events)
+                self.screen.blit(self.title, (self.tx, self.ty))
+                self.quit_button.draw(self.screen)
+
+            if self.game_started and alpha > 0:
                 self.title_pos -= 1000 * dt
-                self.title.set_alpha(self.title_pos * 255 / c.GAME_HEIGHT / 0.3)
+                self.title.set_alpha(alpha)
+                self.quit_button.surf.set_alpha(alpha)
 
             if self.shade_alpha > 0:
                 self.shade.set_alpha(self.shade_alpha)
@@ -703,7 +737,6 @@ class Game:
             if self.xpos >= 100000:
                 self.win()
 
-
     def win(self):
         self.victory_screen(self.screen.copy())
 
@@ -722,7 +755,5 @@ class Game:
         self.since_shake = 0
 
 
-
-
-if __name__=="__main__":
+if __name__ == "__main__":
     Game()
